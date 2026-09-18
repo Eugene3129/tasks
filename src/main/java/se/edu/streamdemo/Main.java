@@ -1,9 +1,12 @@
 package se.edu.streamdemo;
 
+import static java.util.stream.Collectors.toList;
+
 import se.edu.streamdemo.data.Datamanager;
 import se.edu.streamdemo.task.Deadline;
 import se.edu.streamdemo.task.Task;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Main {
@@ -13,16 +16,15 @@ public class Main {
         Datamanager dataManager = new Datamanager("./data/data.txt");
         ArrayList<Task> tasksData = dataManager.loadData();
 
-//        System.out.println("Printing all data ...");
-//        printAllData(tasksData);
-//        printAllDataUsingStreams(tasksData);
-
         System.out.println("Printing deadlines ...");
         printDeadlines(tasksData);
         printDeadlinesUsingStreams(tasksData);
 
         System.out.println("Total number of deadlines: " + countDeadlines(tasksData));
         System.out.println("Total number of deadlines: (using streams) " + countDeadlinesUsingStream(tasksData));
+
+        ArrayList<Task> filteredList = filterTasksByString(tasksData, "10");
+        printAllData(filteredList);
 
     }
 
@@ -67,15 +69,17 @@ public class Main {
     }
 
     public static void printDeadlinesUsingStreams(ArrayList<Task> tasks) {
-        System.out.println("Using stream ... ");
+        System.out.println("Using streams ...");
         tasks.stream()
                 .filter(t -> t instanceof Deadline)
-                .forEach(System.out::println);
-
-        System.out.println("Using parallel stream ... ");
-        tasks.parallelStream()
-                .filter(t -> t instanceof Deadline)
+                .sorted((t1, t2) -> t1.getDescription().compareToIgnoreCase(t2.getDescription()))
                 .forEach(System.out::println);
     }
 
+    public static ArrayList<Task> filterTasksByString(ArrayList<Task> tasks, String filterString) {
+        ArrayList<Task> filtered_list = (ArrayList<Task>) tasks.stream()
+                .filter(t -> t.getDescription().contains(filterString))
+                .collect(toList());
+        return filtered_list;
+    }
 }
